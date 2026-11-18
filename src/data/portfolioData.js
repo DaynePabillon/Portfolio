@@ -23,7 +23,7 @@ export const portfolioData = {
 
   socials: {
     email: "mailto:daynepabillon331@gmail.com",
-    github: "https://github.com",
+    github: "https://github.com/DaynePabillon",
     linkedin: "https://linkedin.com"
   },
 
