@@ -45,7 +45,7 @@ export default function Navbar() {
                 {portfolioData.personal.name}
               </span>
               <span className="text-xs text-slate-400 font-medium">
-                Junior Backend & AI Developer
+                {portfolioData.personal.role}
               </span>
             </div>
           </a>

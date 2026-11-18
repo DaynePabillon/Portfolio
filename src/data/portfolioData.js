@@ -2,13 +2,13 @@ export const portfolioData = {
   personal: {
     name: "Dayne B. Pabillon",
     shortName: "Dayne",
-    hookHeadline: "Junior Backend Developer specializing in Node.js, PostgreSQL, and AI integration.",
+    hookHeadline: "Entry-Level Backend Developer specializing in Node.js, PostgreSQL, and AI integration.",
     hookSubheadline: "Information Technology graduate focused on building reliable backend systems, RESTful APIs, and private local LLM pipelines with Ollama. Experienced in relational database design, third-party API synchronization, and building clean Next.js frontends when needed.",
-    role: "Junior Backend Developer",
+    role: "Entry-Level Backend Developer",
     subRole: "Node.js • Express.js • PostgreSQL • REST APIs • AI Integration",
     location: "Cebu, Philippines",
     email: "daynepabillon331@gmail.com",
-    statusText: "Available for Junior Backend & Software Engineering Roles",
+    statusText: "Fresh Graduate • Available for Entry-Level Roles",
     
     humanBio: {
       philosophy: "I focus primarily on backend development and intelligent systems. While many developers stick strictly to frontend UI, I enjoy working on the engine behind the application: designing normalized PostgreSQL schemas, architecting clean REST APIs in Node and Express, and setting up private local LLMs with Ollama so patient and user data stays on-device.",
