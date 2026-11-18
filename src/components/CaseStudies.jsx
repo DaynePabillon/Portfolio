@@ -12,7 +12,6 @@ import {
   ExternalLink,
   Info
 } from 'lucide-react';
-import { GithubIcon } from './Icons';
 import { portfolioData } from '../data/portfolioData';
 
 export default function CaseStudies() {
@@ -87,20 +86,6 @@ export default function CaseStudies() {
                     {study.tagline}
                   </p>
                 </div>
-
-                {study.githubUrl && (
-                  <div className="flex items-center gap-3 shrink-0">
-                    <a
-                      href={study.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0B0F17] hover:bg-[#1E293B] text-slate-200 border border-[#1E293B] text-xs font-semibold transition-colors"
-                    >
-                      <GithubIcon className="w-4 h-4" />
-                      <span>Code Repository</span>
-                    </a>
-                  </div>
-                )}
               </div>
 
               {/* Case Study Content Grid */}
