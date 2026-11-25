@@ -7,6 +7,7 @@ export default function PrivateInsights({ onExit }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [data, setData] = useState(null);
+  const [countryFilter, setCountryFilter] = useState('US');
 
   const fetchInsights = async (secretToUse) => {
     setLoading(true);
@@ -42,17 +43,22 @@ export default function PrivateInsights({ onExit }) {
     fetchInsights(passcode.trim());
   };
 
-  const regionSummary = useMemo(() => {
+  const filteredVisits = useMemo(() => {
     if (!data?.visits) return [];
+    if (countryFilter === 'ALL') return data.visits;
+    return data.visits.filter((v) => (v.country || '').toUpperCase() === countryFilter);
+  }, [data, countryFilter]);
+
+  const regionSummary = useMemo(() => {
     const counts = {};
-    for (const v of data.visits) {
+    for (const v of filteredVisits) {
       const key = `${v.country || 'Unknown'} / ${v.region || 'Unknown'}`;
       counts[key] = (counts[key] || 0) + 1;
     }
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 12);
-  }, [data]);
+  }, [filteredVisits]);
 
   if (!data) {
     return (
@@ -120,7 +126,33 @@ export default function PrivateInsights({ onExit }) {
               Visitor Location Insights
             </h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Country Filter Toggle */}
+            <div className="inline-flex items-center p-1 rounded-xl bg-[#111827] border border-[#1E293B]">
+              <button
+                type="button"
+                onClick={() => setCountryFilter('US')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                  countryFilter === 'US'
+                    ? 'bg-sky-500 text-slate-950'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                US Only
+              </button>
+              <button
+                type="button"
+                onClick={() => setCountryFilter('ALL')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                  countryFilter === 'ALL'
+                    ? 'bg-sky-500 text-slate-950'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                All Countries
+              </button>
+            </div>
+
             <button
               onClick={() => fetchInsights(authToken)}
               disabled={loading}
@@ -142,15 +174,23 @@ export default function PrivateInsights({ onExit }) {
         {/* Top Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-5 rounded-2xl bg-[#111827] border border-[#1E293B]">
-            <div className="text-xs text-slate-400 font-medium mb-1">Total Recorded Visits</div>
-            <div className="text-3xl font-extrabold text-white">{data.totalVisits}</div>
+            <div className="text-xs text-slate-400 font-medium mb-1">
+              {countryFilter === 'US' ? 'US Visits (Recent)' : 'Total Recorded Visits'}
+            </div>
+            <div className="text-3xl font-extrabold text-white">
+              {countryFilter === 'US' ? filteredVisits.length : data.totalVisits}
+            </div>
           </div>
           <div className="p-5 rounded-2xl bg-[#111827] border border-[#1E293B]">
-            <div className="text-xs text-slate-400 font-medium mb-1">Recent Logs Shown</div>
+            <div className="text-xs text-slate-400 font-medium mb-1">
+              {countryFilter === 'US' ? 'All Countries (Recent)' : 'Recent Logs Shown'}
+            </div>
             <div className="text-3xl font-extrabold text-sky-400">{data.visits.length}</div>
           </div>
           <div className="p-5 rounded-2xl bg-[#111827] border border-[#1E293B]">
-            <div className="text-xs text-slate-400 font-medium mb-1">Unique Country / State Pairs</div>
+            <div className="text-xs text-slate-400 font-medium mb-1">
+              {countryFilter === 'US' ? 'Unique US States' : 'Unique Country / State Pairs'}
+            </div>
             <div className="text-3xl font-extrabold text-white">{regionSummary.length}</div>
           </div>
         </div>
@@ -206,14 +246,16 @@ export default function PrivateInsights({ onExit }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1E293B]">
-                {data.visits.length === 0 ? (
+                {filteredVisits.length === 0 ? (
                   <tr>
                     <td colSpan="7" className="py-8 text-center text-slate-400">
-                      No visits recorded yet.
+                      {countryFilter === 'US'
+                        ? 'No US visits recorded yet.'
+                        : 'No visits recorded yet.'}
                     </td>
                   </tr>
                 ) : (
-                  data.visits.map((v, i) => (
+                  filteredVisits.map((v, i) => (
                     <tr key={i} className="hover:bg-[#0B0F17]/60 transition-colors">
                       <td className="py-3 px-4 text-slate-300 whitespace-nowrap">
                         {new Date(v.timestamp).toLocaleString()}
