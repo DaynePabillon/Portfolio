@@ -57,6 +57,17 @@ export default async function handler(req, res) {
         return res.status(200).json({ ok: true, stored: false });
       }
 
+      // Skip headless screenshot bots, link-previewers, and crawlers
+      const ua = (req.headers['user-agent'] || '').toLowerCase();
+      if (
+        !ua ||
+        /headless|bot|crawler|spider|vercel|preview|slurp|mediapartners|facebookexternalhit|linkedinbot|twitterbot|discordbot|whatsapp|telegrambot|pingdom|uptimerobot/i.test(
+          ua
+        )
+      ) {
+        return res.status(200).json({ ok: true, stored: false });
+      }
+
       // Extract only coarse geo headers provided by Vercel Edge (never read or store IP)
       const country = decodeHeader(req.headers['x-vercel-ip-country']);
       const region = decodeHeader(req.headers['x-vercel-ip-country-region']);
@@ -73,12 +84,19 @@ export default async function handler(req, res) {
         }
       }
 
+      const timezone = typeof body.timezone === 'string' ? body.timezone.slice(0, 64) : 'Unknown';
+
+      // Real human browsers almost never report UTC/Etc/UTC (automated cloud renderers do)
+      if (timezone === 'UTC' || timezone === 'Etc/UTC') {
+        return res.status(200).json({ ok: true, stored: false });
+      }
+
       const visit = {
         timestamp: new Date().toISOString(),
         country,
         region,
         city,
-        timezone: typeof body.timezone === 'string' ? body.timezone.slice(0, 64) : 'Unknown',
+        timezone,
         device: typeof body.device === 'string' ? body.device.slice(0, 32) : 'Unknown',
         referrer: typeof body.referrer === 'string' && body.referrer ? body.referrer.slice(0, 200) : 'Direct',
       };
@@ -132,6 +150,28 @@ export default async function handler(req, res) {
       });
     } catch (err) {
       return res.status(500).json({ error: 'Failed to load visit logs.' });
+    }
+  }
+
+  if (req.method === 'DELETE') {
+    const adminSecret = process.env.ADMIN_SECRET;
+    if (!adminSecret) {
+      return res.status(503).json({ error: 'ADMIN_SECRET is not configured on the server.' });
+    }
+
+    const providedSecret = req.headers['x-admin-secret'];
+    if (!providedSecret || providedSecret !== adminSecret) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+      await Promise.all([
+        redisCommand(['DEL', 'portfolio_visits']),
+        redisCommand(['SET', 'portfolio_visits_total', '0']),
+      ]);
+      return res.status(200).json({ ok: true });
+    } catch {
+      return res.status(500).json({ error: 'Failed to clear visit logs.' });
     }
   }
 

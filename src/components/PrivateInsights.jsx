@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Lock, Globe, MapPin, RefreshCw, LogOut, Clock, Monitor, ExternalLink, ShieldAlert } from 'lucide-react';
+import { Lock, Globe, MapPin, RefreshCw, LogOut, Clock, Monitor, ExternalLink, ShieldAlert, Trash2 } from 'lucide-react';
 
 export default function PrivateInsights({ onExit }) {
   const [passcode, setPasscode] = useState('');
@@ -41,6 +41,25 @@ export default function PrivateInsights({ onExit }) {
     e.preventDefault();
     if (!passcode.trim()) return;
     fetchInsights(passcode.trim());
+  };
+
+  const handleClearLogs = async () => {
+    if (!authToken || loading) return;
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/visit', {
+        method: 'DELETE',
+        headers: { 'x-admin-secret': authToken },
+      });
+      if (res.ok) {
+        setData({ totalVisits: 0, visits: [] });
+      }
+    } catch {
+      setError('Failed to clear logs.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredVisits = useMemo(() => {
@@ -160,6 +179,14 @@ export default function PrivateInsights({ onExit }) {
             >
               <RefreshCw className={`w-3.5 h-3.5 text-sky-400 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh</span>
+            </button>
+            <button
+              onClick={handleClearLogs}
+              disabled={loading}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#111827] hover:bg-rose-500/10 border border-[#1E293B] hover:border-rose-500/30 text-xs font-semibold text-slate-300 hover:text-rose-300 transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Clear Logs</span>
             </button>
             <button
               onClick={onExit}
