@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Lock, Globe, MapPin, RefreshCw, LogOut, Clock, Monitor, ExternalLink, ShieldAlert, Trash2 } from 'lucide-react';
+import { Lock, Globe, MapPin, RefreshCw, LogOut, Clock, Monitor, ExternalLink, ShieldAlert, Trash2, AlertTriangle, Info } from 'lucide-react';
 
 export default function PrivateInsights({ onExit }) {
   const [passcode, setPasscode] = useState('');
@@ -8,6 +8,7 @@ export default function PrivateInsights({ onExit }) {
   const [error, setError] = useState('');
   const [data, setData] = useState(null);
   const [countryFilter, setCountryFilter] = useState('US');
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const fetchInsights = async (secretToUse) => {
     setLoading(true);
@@ -54,6 +55,7 @@ export default function PrivateInsights({ onExit }) {
       });
       if (res.ok) {
         setData({ totalVisits: 0, visits: [] });
+        setConfirmClear(false);
       }
     } catch {
       setError('Failed to clear logs.');
@@ -181,9 +183,9 @@ export default function PrivateInsights({ onExit }) {
               <span>Refresh</span>
             </button>
             <button
-              onClick={handleClearLogs}
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#111827] hover:bg-rose-500/10 border border-[#1E293B] hover:border-rose-500/30 text-xs font-semibold text-slate-300 hover:text-rose-300 transition-colors"
+              onClick={() => setConfirmClear(true)}
+              disabled={loading || confirmClear}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#111827] hover:bg-rose-500/10 disabled:opacity-50 border border-[#1E293B] hover:border-rose-500/30 text-xs font-semibold text-slate-300 hover:text-rose-300 transition-colors"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Clear Logs</span>
@@ -197,6 +199,41 @@ export default function PrivateInsights({ onExit }) {
             </button>
           </div>
         </div>
+
+        {/* Warning Confirmation Banner for Clear Logs */}
+        {confirmClear && (
+          <div className="p-4 sm:p-5 rounded-2xl bg-rose-500/10 border border-rose-500/40 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+              <div>
+                <div className="text-sm font-bold text-rose-200">
+                  Warning: Permanently clear all visit logs?
+                </div>
+                <div className="text-xs text-rose-300/80 mt-0.5">
+                  This will delete all recorded visits from Redis and reset the counter to 0. This cannot be undone.
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => setConfirmClear(false)}
+                disabled={loading}
+                className="px-4 py-2 rounded-xl bg-[#0B0F17] hover:bg-slate-800 border border-[#1E293B] text-xs font-semibold text-slate-300 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleClearLogs}
+                disabled={loading}
+                className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white text-xs font-bold transition-colors"
+              >
+                {loading ? 'Clearing...' : 'Yes, Clear All Logs'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Top Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -309,6 +346,30 @@ export default function PrivateInsights({ onExit }) {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Earlier Visits Note (Pre-Implementation) */}
+        <div className="p-5 sm:p-6 rounded-2xl bg-[#111827] border border-[#1E293B] flex flex-col sm:flex-row items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <Info className="w-5 h-5 text-sky-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <div className="text-sm font-bold text-white">
+                Looking for visitors from before this tracker was added?
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-2xl">
+                Visits that happened before Upstash Redis was connected cannot be imported into this table. To inspect earlier traffic, open your Vercel project and check <strong className="text-slate-200">Logs -&gt; CDN Requests</strong> (with the Timeline filter set to Last 24 hours or Last 7 days) or the <strong className="text-slate-200">Analytics</strong> tab.
+              </p>
+            </div>
+          </div>
+          <a
+            href="https://vercel.com/dashboard"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0B0F17] hover:bg-slate-800 border border-[#1E293B] text-xs font-semibold text-sky-400 shrink-0 transition-colors"
+          >
+            <span>Open Vercel Dashboard</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
         </div>
       </div>
     </div>
