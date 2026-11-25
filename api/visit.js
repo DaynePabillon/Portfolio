@@ -1,8 +1,16 @@
 // Vercel Serverless Function for privacy-friendly visitor location tracking (Country + State/Region only, no IP stored)
 
 function getRedisConfig() {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url =
+    process.env.KV_REST_API_URL ||
+    process.env.STORAGE_KV_REST_API_URL ||
+    process.env.STORAGE_REST_API_URL ||
+    process.env.UPSTASH_REDIS_REST_URL;
+  const token =
+    process.env.KV_REST_API_TOKEN ||
+    process.env.STORAGE_KV_REST_API_TOKEN ||
+    process.env.STORAGE_REST_API_TOKEN ||
+    process.env.UPSTASH_REDIS_REST_TOKEN;
   return { url, token };
 }
 
